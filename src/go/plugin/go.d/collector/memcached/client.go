@@ -4,9 +4,12 @@ package memcached
 
 import (
 	"bytes"
+	"os"
 	"strings"
 
+	"fmt"
 	"github.com/netdata/netdata/go/plugins/plugin/go.d/pkg/socket"
+	"time"
 )
 
 type memcachedConn interface {
@@ -24,6 +27,7 @@ func newMemcachedConn(conf Config) memcachedConn {
 
 type memcachedClient struct {
 	conn socket.Client
+	last time.Time
 }
 
 func (c *memcachedClient) connect() error {
@@ -35,6 +39,20 @@ func (c *memcachedClient) disconnect() {
 }
 
 func (c *memcachedClient) queryStats() ([]byte, error) {
+	now := time.Now()
+
+	if !c.last.IsZero() {
+		fmt.Fprintf(os.Stderr, "[memcached][queryStats] now=%s delta=%s\n",
+			now.Format(time.RFC3339Nano),
+			now.Sub(c.last),
+		)
+	} else {
+		fmt.Fprintf(os.Stderr, "[memcached][queryStats] now=%s first_call\n",
+			now.Format(time.RFC3339Nano),
+		)
+	}
+	c.last = now
+
 	var b bytes.Buffer
 	if err := c.conn.Command("stats\r\n", func(bytes []byte) (bool, error) {
 		s := strings.TrimSpace(string(bytes))

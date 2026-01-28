@@ -1,5 +1,6 @@
 # log directory
 netdata-dev/
+netdata-interval-log/
 
 # Secrets
 gcs-credentials.json
