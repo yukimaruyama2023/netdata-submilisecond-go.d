@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -317,7 +318,15 @@ func (m *Manager) removeConfig(cfg confgroup.Config) {
 }
 
 func (m *Manager) runNotifyRunningJobs() {
-	tk := ticker.New(time.Second)
+	d := time.Second // default: 1s
+
+	if s, ok := os.LookupEnv("GO_D_INTERVAL"); ok {
+		if ms, err := strconv.Atoi(s); err == nil && ms > 0 {
+			d = time.Duration(ms) * time.Millisecond
+		}
+	}
+
+	tk := ticker.New(d)
 	defer tk.Stop()
 
 	for {

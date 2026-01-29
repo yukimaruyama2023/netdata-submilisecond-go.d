@@ -400,7 +400,8 @@ func (j *Job) Stop() {
 }
 
 func (j *Job) shouldCollect(clock int) bool {
-	return clock%(j.updateEvery+j.penalty()) == 0
+	// return clock%(j.updateEvery+j.penalty()) == 0
+	return true
 }
 
 func (j *Job) disableAutoDetection() {
